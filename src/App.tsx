@@ -28,7 +28,7 @@ function App() {
         model: "isnet",
         device: "gpu",
         output: { format: "image/png", quality: 1 },
-        progress: (key: string, current: number, total: number) => {
+        progress: (_key: string, current: number, total: number) => {
           if (total > 0) {
             setProgress(Math.round((current / total) * 100));
           }
