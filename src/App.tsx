@@ -25,11 +25,13 @@ function App() {
 
     try {
       const blob = await removeBackground(file, {
+        model: "isnet",
+        device: "gpu",
+        output: { format: "image/png", quality: 1 },
         progress: (key: string, current: number, total: number) => {
           if (total > 0) {
             setProgress(Math.round((current / total) * 100));
           }
-          console.log(`${key}: ${current}/${total}`);
         },
       });
       const url = URL.createObjectURL(blob);
