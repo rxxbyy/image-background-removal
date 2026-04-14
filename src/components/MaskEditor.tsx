@@ -228,7 +228,7 @@ export function MaskEditor({ originalUrl, resultUrl, onSave }: MaskEditorProps) 
       {/* Canvas */}
       <div
         ref={containerRef}
-        className="bg-[url('data:image/svg+xml;charset=utf-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22><rect width=%2210%22 height=%2210%22 fill=%22%23ccc%22/><rect x=%2210%22 y=%2210%22 width=%2210%22 height=%2210%22 fill=%22%23ccc%22/></svg>')] rounded-lg flex justify-center"
+        className="checkerboard rounded-lg flex justify-center"
       >
         <canvas
           ref={canvasRef}
