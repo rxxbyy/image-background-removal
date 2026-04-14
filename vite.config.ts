@@ -5,7 +5,7 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/image-bacgkround-remover/",
+  base: "/image-background-removal/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
