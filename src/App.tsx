@@ -18,8 +18,9 @@ let pipelineInstance: BackgroundRemovalPipeline | null = null;
 
 async function getRemover(onProgress: (p: number) => void) {
   if (pipelineInstance) return pipelineInstance;
+  const hasWebGPU = "gpu" in navigator && !!(navigator as Navigator & { gpu?: unknown }).gpu;
   pipelineInstance = (await pipeline("background-removal", "onnx-community/BEN2-ONNX", {
-    device: "webgpu",
+    device: hasWebGPU ? "webgpu" : "wasm",
     dtype: "fp16",
     progress_callback: (info: { status: string; progress?: number }) => {
       if (info.status === "progress" && info.progress != null) {
