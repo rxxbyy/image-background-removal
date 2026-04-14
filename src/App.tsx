@@ -20,7 +20,7 @@ async function getRemover(onProgress: (p: number) => void) {
   if (pipelineInstance) return pipelineInstance;
   pipelineInstance = (await pipeline("background-removal", "onnx-community/BEN2-ONNX", {
     device: "webgpu",
-    dtype: "fp32",
+    dtype: "fp16",
     progress_callback: (info: { status: string; progress?: number }) => {
       if (info.status === "progress" && info.progress != null) {
         onProgress(Math.round(info.progress));
