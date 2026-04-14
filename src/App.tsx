@@ -18,7 +18,7 @@ let pipelineInstance: BackgroundRemovalPipeline | null = null;
 
 async function getRemover(onProgress: (p: number) => void) {
   if (pipelineInstance) return pipelineInstance;
-  pipelineInstance = (await pipeline("background-removal", "briaai/RMBG-2.0", {
+  pipelineInstance = (await pipeline("background-removal", "onnx-community/BEN2-ONNX", {
     device: "webgpu",
     dtype: "fp32",
     progress_callback: (info: { status: string; progress?: number }) => {
