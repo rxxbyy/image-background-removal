@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef } from "react";
-import { removeBackground } from "@imgly/background-removal";
+import {
+  pipeline,
+  type BackgroundRemovalPipeline,
+} from "@huggingface/transformers";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -10,8 +13,26 @@ import {
 } from "@/components/ui/dialog";
 import { MaskEditor } from "@/components/MaskEditor";
 
+// Cache the pipeline so the model is only loaded once
+let pipelineInstance: BackgroundRemovalPipeline | null = null;
+
+async function getRemover(onProgress: (p: number) => void) {
+  if (pipelineInstance) return pipelineInstance;
+  pipelineInstance = (await pipeline("background-removal", "briaai/RMBG-2.0", {
+    device: "webgpu",
+    dtype: "fp32",
+    progress_callback: (info: { status: string; progress?: number }) => {
+      if (info.status === "progress" && info.progress != null) {
+        onProgress(Math.round(info.progress));
+      }
+    },
+  })) as BackgroundRemovalPipeline;
+  return pipelineInstance;
+}
+
 function App() {
   const [processing, setProcessing] = useState(false);
+  const [status, setStatus] = useState("");
   const [progress, setProgress] = useState(0);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -25,6 +46,7 @@ function App() {
   const processImage = useCallback(async (file: File) => {
     setProcessing(true);
     setProgress(0);
+    setStatus("Loading model...");
     setResultUrl(null);
     setFinalUrl(null);
     setEditing(false);
@@ -33,16 +55,14 @@ function App() {
     setOriginalUrl(origUrl);
 
     try {
-      const blob = await removeBackground(file, {
-        model: "isnet",
-        device: "gpu",
-        output: { format: "image/png", quality: 1 },
-        progress: (_key: string, current: number, total: number) => {
-          if (total > 0) {
-            setProgress(Math.round((current / total) * 100));
-          }
-        },
-      });
+      const remover = await getRemover(setProgress);
+
+      setStatus("Removing background...");
+      setProgress(0);
+
+      const result = await remover(origUrl);
+      const blob = await result.toBlob("image/png");
+
       const url = URL.createObjectURL(blob);
       setResultUrl(url);
       setFinalUrl(url);
@@ -53,6 +73,7 @@ function App() {
       alert("Failed to remove background. Check console for details.");
     } finally {
       setProcessing(false);
+      setStatus("");
     }
   }, []);
 
@@ -121,7 +142,7 @@ function App() {
         >
           <p className="text-muted-foreground">
             {processing
-              ? "Processing..."
+              ? status
               : "Drag & drop an image here, or click to upload"}
           </p>
           <input
@@ -137,7 +158,7 @@ function App() {
           <div className="space-y-2">
             <Progress value={progress} />
             <p className="text-sm text-muted-foreground text-center">
-              {progress}%
+              {status} {progress > 0 && `${progress}%`}
             </p>
           </div>
         )}
